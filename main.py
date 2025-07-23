@@ -63,7 +63,8 @@ k <- 8
 min_split_segments <- 10
 
 # Seuil minimal de fréquence documentaire dans le DFM
-# Exemple : si min_docfreq <- 2 seuls les mots présents dans au moins 2 segments sont gardés
+# Exemple : si min_docfreq <- 2 seuls les mots qui apparaissent dans au moins 2 segments 
+# (c’est-à-dire présents dans 2 segments différents du corpus) sont conservés dans la matrice DFM.
 # Les mots présents dans seulement 1 segment sont retirés
 min_docfreq <- 4
 
@@ -145,7 +146,7 @@ if (lemmatisation) {
     return(df)
   })
   annotation_df <- do.call(rbind, annotation_list)
-  # Filtrer selon les formes morphosyntaxiques choisies par l'utilisateur
+  # Filtrer selon les formes choisies par l'utilisateur
   annotation_df <- annotation_df %>%
     filter(upos %in% upos_a_conserver, !is.na(lemma), lemma != "", lemma != " ")
   cat("Lemmatisation - lemmes retenus :", nrow(annotation_df), "\n")
@@ -199,6 +200,8 @@ docvars(filtered_corpus, "orig_doc_id") <- gsub("_.*", "", docnames(filtered_cor
 # Classification hiérarchique descendante (CHD)
 #########################################################
 cat("Clustering...\n")
+# Rainette n’accepte pas de valeur de min_split_members inférieure à 3.
+# On force donc la valeur minimale à 3 pour éviter les erreurs.
 res <- rainette(dfm, k = k, min_segment_size = 0, min_split_members = max(3, min_split_segments))
 docvars(filtered_corpus)$Classes <- res$group
 cat("Répartition classes :\n")
